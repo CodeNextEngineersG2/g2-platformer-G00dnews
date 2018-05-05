@@ -175,25 +175,26 @@ function createCollectable(x, y) {
   //collectable.debug = true;
 }
 
-// Applies gravity to player and monsters. Also checks if either of them
-// have fallen off the screen. If a player has fallen off the screen, this
-// function calls executeLoss(). If a monster falls off the screen, it is
-// removed from the game.
 function applyGravity() {
 
+player.velocity.y += GRAVITY;
+
 }
 
-// Called in the draw() function. Continuously checks for collisions and overlaps
-// between all relevant game objects. Depending on the collision or overlap that
-// occurs, a specific callback function is run.
 function checkCollisions() {
 
+player.collide(platforms, platformCollision);
+
 }
 
-// Callback function that runs when the player or a monster collides with a
-// platform.
 function platformCollision(sprite, platform) {
 
+if (sprite === player && sprite.touching.bottom) {
+
+  player.velocity.y = 0;
+  playerGrounded = true;
+
+  } 
 }
 
 // Callback function that runs when the player collides with a monster.
@@ -209,20 +210,36 @@ function getCollectable(player, collectable) {
 // Updates the player's position and current animation by calling
 // all of the relevant "check" functions below.
 function updatePlayer() {
-  //console.log("Player x: " + player.position.x + " Player y: " + player.position.y);
+  
+  console.log("Player x: " + player.position.x + " Player y: " + player.position.y);
+  checkIdle();
+  checkFalling();
+  checkJumping();
+  checkMovingLeftRight();
 
 }
 
-// Check if the player is idle. If neither left nor right are being pressed and the
-// player is grounded, set player's animation to "idle", and change her
-// x velocity to 0.
 function checkIdle() {
+
+  if (!keyIsDown(LEFT_ARROW) && !keyIsDown(RIGHT_ARROW)) {
+
+    player.changeAnimation("idle");
+    player.velocity.x = 0;
+
+  }
 
 }
 
 // Check if the player is falling. If she is not grounded and her y velocity is
 // greater than 0, then set her animation to "fall".
 function checkFalling() {
+
+  playerGrounded == false;
+  if (!playerGrounded && player.velocity.y > 0) {
+
+      player.changeAnimation("fall");
+
+  }
 
 }
 
@@ -232,12 +249,50 @@ function checkFalling() {
 // than 0.
 function checkJumping() {
 
+  if (player.velocity.y < 0) {
+
+    player.changeAnimation("jump");
+
+if (keyIsDown(UP_ARROW) && currentJumpTime > 0) {
+
+    player.velocity.y = currentJumpForce;
+    deltaMillis = new Date();
+
+    }
+
+  }
+
 }
 
-// Check if the player is moving left or right. If so, move the player character
-// left or right according to DEFAULT_VELOCITY. Also be sure to mirror the
-// player's sprite left or right to avoid "moonwalking".
 function checkMovingLeftRight() {
+
+  if (keyIsDown(LEFT_ARROW) && !keyIsDown(RIGHT_ARROW)) {
+
+    player.mirrorX(-1);
+
+if (playerGrounded = true) {
+
+    player.changeAnimation("run");
+
+  }
+
+  player.velocity.x = -DEFAULT_VELOCITY;
+
+  } 
+
+else if (keyIsDown(RIGHT_ARROW) && !keyIsDown(LEFT_ARROW)) {
+
+    player.mirrorX(+1);
+
+player.velocity.x = +DEFAULT_VELOCITY;
+
+ if (playerGrounded = true) {
+    
+    player.changeAnimation("run");
+
+    }
+
+  } 
 
 }
 
@@ -245,6 +300,14 @@ function checkMovingLeftRight() {
 // this should initiate the jump sequence, which can be extended by holding down
 // the up arrow key (see checkJumping() above).
 function keyPressed() {
+
+  if (playerGrounded && keyCode === UP_ARROW) {
+
+    playerGrounded = false;
+    player.velocity.y = currentJumpForce;
+    millis = new Date();
+
+  }
 
 }
 
